@@ -17,6 +17,8 @@ import requests
 import shutil
 from xlsxwriter import Workbook
 
+CHROMEDRIVER_PATH = "chromedriver/chromedriver"
+
 class Scraper:
     def __init__(self, username, password, target_username):
         self.username = username
@@ -25,7 +27,7 @@ class Scraper:
         self.base_path = os.path.join('data', self.target_username) # change it as per requirement
         self.imagesData_path = os.path.join(self.base_path, 'images') # change it as per requirement 
         self.descriptionsData_path = os.path.join(self.base_path, 'descriptions') # change it as per requirement
-        self.driver = webdriver.Chrome('chromedriver_linux64/chromedriver') # I'm using linux. You can change it as per your OS.
+        self.driver = webdriver.Chrome(CHROMEDRIVER_PATH)
         self.main_url = 'https://www.instagram.com'
         
         # check the internet connection and if the home page is fully loaded or not. 
@@ -56,14 +58,7 @@ class Scraper:
 
 
     def login(self):
-        
-        try:
-            login_link = self.driver.find_element_by_link_text('Log in')
-            login_link.click()
-        except Exception:
-            print('Unable to find the Login button.')
-            sys.exit()
-        
+
         # check if the login page is fully loaded or not.
         try:
             WebDriverWait(self.driver, 10).until(EC.title_contains('Login'))
@@ -72,27 +67,22 @@ class Scraper:
             sys.exit()
         
         try: 
-            username_input = self.driver.find_element_by_xpath('//input[@name = "username"]')
+            username_input = self.driver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[1]/div/label/input')
+            username_input.send_keys(self.username)
         except Exception:
             print('Unable to find the username field.')
             sys.exit()    
 
         try: 
-            password_input = self.driver.find_element_by_xpath('//input[@name = "password"]')
+            password_input = self.driver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[2]/div/label/input')
+            password_input.send_keys(self.password)
         except Exception:
             print('Unable to find the password field.')
             sys.exit() 
-        
-        # sending the credentials
-        try:
-            username_input.send_keys(self.username)
-            password_input.send_keys(self.password)
-        except Exception:
-            print('Please check your connection and try again.')
-            sys.exit()
+
 
         print('Logging in...')
-        password_input.submit() 
+        self.driver.find_element_by_xpath('/html/body/div[1]/section/main/article/div[2]/div[1]/div/form/div/div[3]').click()
         
         # check if the login was successful
         try:
